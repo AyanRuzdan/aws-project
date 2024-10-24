@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Problems Solved Line Charts</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <div class="container mt-5">
+    <h1 class="mb-4 text-center">Problems Solved Line Charts</h1>
+
+    <!-- Upload button -->
+    <div class="row justify-content-center">
+      <div class="col-md-12 text-center">
+        <input type="file" id="jsonFileInput" class="form-control-file mb-3" accept=".json" />
+      </div>
+    </div>
+
+
+    <div class="row justify-content-center mt-5">
+      <div class="col-md-6">
+        <canvas id="rankingChart" width="1100" height="550"></canvas>
+      </div>
+      <div class="col-md-6">
+        <canvas id="easyProblemsChart" width="1100" height="550"></canvas>
+      </div>
+      <div class="col-md-6">
+        <canvas id="mediumProblemsChart" width="1100" height="550"></canvas>
+      </div>
+      <div class="col-md-6">
+        <canvas id="hardProblemsChart" width="1100" height="550"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <script>
+    let easyProblemsChart, mediumProblemsChart, hardProblemsChart, rankingChart;
+
+    document.getElementById("jsonFileInput").addEventListener("change", function (event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const jsonData = JSON.parse(e.target.result);
+          renderCharts(jsonData); 
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    function renderCharts(jsonData) {
+      const dates = jsonData.map((entry) => entry.date);
+      const easyProblems = jsonData.map((entry) => entry.solved_problems.Easy);
+      const mediumProblems = jsonData.map((entry) => entry.solved_problems.Medium);
+      const hardProblems = jsonData.map((entry) => entry.solved_problems.Hard);
+      const ranking = jsonData.map((entry) => entry.ranking);
+
+      // Create charts
+      easyProblemsChart = createChart('easyProblemsChart', dates, easyProblems, 'Easy Problems Solved', 'rgba(0, 255, 0, 1)');
+      mediumProblemsChart = createChart('mediumProblemsChart', dates, mediumProblems, 'Medium Problems Solved', 'rgba(255, 255, 0, 1)');
+      hardProblemsChart = createChart('hardProblemsChart', dates, hardProblems, 'Hard Problems Solved', 'rgba(255, 0, 0, 1)');
+      rankingChart = createChart('rankingChart', dates, ranking, 'Ranking', 'rgba(255, 132, 0, 1)');
+
+    }
+
+    function createChart(canvasId, labels, data, label, borderColor) {
+      const ctx = document.getElementById(canvasId).getContext("2d");
+      return new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: labels,
+          datasets: [{
+            label: label,
+            data: data,
+            borderColor: borderColor,
+            backgroundColor: borderColor.replace('1)', '0.2)'),
+            fill: false,
+            tension: 0.1,
+            pointRadius: 0,
+          }],
+        },
+        options: {
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "Date",
+              },
+            },
+            y: {
+              title: {
+                display: true,
+                text: "Number of Problems Solved",
+              },
+            },
+          },
+        },
+      });
+    }
+
+    function attachToggleListener(checkboxId, chart) {
+      document.getElementById(checkboxId).addEventListener("change", function () {
+        chart.data.datasets[0].hidden = !this.checked;
+        chart.update();
+      });
+    }
+  </script>
+</body>
+
+</html>
